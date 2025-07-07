@@ -25,9 +25,8 @@ The launch of Vercel's BotID service, powered by Kasada, exemplifies the evoluti
 
 • **Future-proof architecture:** Built for nonstationary security challenges requiring perpetual adaptation against evolving adversaries
 
-![][image1]
 
-## Traditional CAPTCHAs and modern invisible systems actually work in similar ways: they classify sessions based on telemetry analysis collected from browser interactions. The critical difference lies in data integrity and understanding how effectively attackers can manipulate the classification process.
+Traditional CAPTCHAs and modern invisible systems actually work in similar ways: they classify sessions based on telemetry analysis collected from browser interactions. The critical difference lies in data integrity and understanding how effectively attackers can manipulate the classification process.
 
 ## The telemetry classification reality
 
