@@ -1,3 +1,5 @@
+import { KnowYourCaptchaGame } from "./know-your-captcha-game"
+
 export function HeroSection() {
   return (
     <section className="bg-gradient-to-b from-gray-900 to-gray-800 py-20">
@@ -16,6 +18,7 @@ export function HeroSection() {
           >
             Read the Blog
           </a>
+          <KnowYourCaptchaGame />
           <a
             href="/newsletter"
             className="border border-green-500 text-green-400 hover:bg-green-500 hover:text-white px-8 py-3 rounded-lg font-semibold transition-colors"

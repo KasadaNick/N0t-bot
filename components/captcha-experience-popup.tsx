@@ -29,7 +29,42 @@ export function CaptchaExperiencePopup() {
   const [attempts, setAttempts] = useState(0)
   const [showError, setShowError] = useState(false)
   const [isManualTrigger, setIsManualTrigger] = useState(false)
+  const [hasCompletedBefore, setHasCompletedBefore] = useState(false)
   const [debugInfo, setDebugInfo] = useState({ scrollY: 0, timeOnPage: 0, triggered: false })
+
+  // Listen for game completion to trigger popup
+  useEffect(() => {
+    const handleGameComplete = () => {
+      console.log("Game completed - triggering CAPTCHA popup")
+      triggerManually()
+    }
+
+    // Listen for custom event from the game
+    window.addEventListener("captcha-game-complete", handleGameComplete)
+    return () => window.removeEventListener("captcha-game-complete", handleGameComplete)
+  }, [])
+
+  // Check if user has completed the popup before
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const completed = localStorage.getItem("captcha-popup-completed")
+      const completedTime = localStorage.getItem("captcha-popup-completed-time")
+
+      // Reset after 15 minutes
+      if (completed && completedTime) {
+        const timeDiff = Date.now() - Number.parseInt(completedTime)
+        const fifteenMinutes = 15 * 60 * 1000
+
+        if (timeDiff > fifteenMinutes) {
+          localStorage.removeItem("captcha-popup-completed")
+          localStorage.removeItem("captcha-popup-completed-time")
+          setHasCompletedBefore(false)
+        } else {
+          setHasCompletedBefore(true)
+        }
+      }
+    }
+  }, [])
 
   // Debug trigger - remove this in production
   useEffect(() => {
@@ -51,8 +86,10 @@ export function CaptchaExperiencePopup() {
     }
   }, [])
 
-  // Trigger popup after user engagement - SIMPLIFIED VERSION
+  // Trigger popup after user engagement - but only if not completed before
   useEffect(() => {
+    if (hasCompletedBefore) return // Don't trigger if already completed
+
     let timeoutId: NodeJS.Timeout
 
     const triggerPopup = () => {
@@ -69,7 +106,7 @@ export function CaptchaExperiencePopup() {
 
     // Also trigger on scroll past 300px after 3 seconds
     const handleScroll = () => {
-      if (window.scrollY > 300 && !isVisible) {
+      if (window.scrollY > 300 && !isVisible && !hasCompletedBefore) {
         console.log("Scroll trigger activated")
         clearTimeout(timeoutId)
         setTimeout(triggerPopup, 3000)
@@ -82,7 +119,7 @@ export function CaptchaExperiencePopup() {
       window.removeEventListener("scroll", handleScroll)
       clearTimeout(timeoutId)
     }
-  }, [isVisible])
+  }, [isVisible, hasCompletedBefore])
 
   // Collect browser fingerprint
   useEffect(() => {
@@ -106,15 +143,69 @@ export function CaptchaExperiencePopup() {
   }, [])
 
   const captchaImages = [
-    { id: 1, label: "Traffic Light", isCorrect: true },
-    { id: 2, label: "Car", isCorrect: false },
-    { id: 3, label: "Traffic Light", isCorrect: true },
-    { id: 4, label: "Bicycle", isCorrect: false },
-    { id: 5, label: "Traffic Light", isCorrect: true },
-    { id: 6, label: "Bus", isCorrect: false },
-    { id: 7, label: "Crosswalk", isCorrect: false },
-    { id: 8, label: "Traffic Light", isCorrect: true },
-    { id: 9, label: "Motorcycle", isCorrect: false },
+    {
+      id: 1,
+      label: "🚦 Traffic Light",
+      bgColor: "bg-red-200",
+      textColor: "text-red-800",
+      isCorrect: true,
+    },
+    {
+      id: 2,
+      label: "🚗 Red Car",
+      bgColor: "bg-blue-200",
+      textColor: "text-blue-800",
+      isCorrect: false,
+    },
+    {
+      id: 3,
+      label: "🚦 Traffic Signal",
+      bgColor: "bg-yellow-200",
+      textColor: "text-yellow-800",
+      isCorrect: true,
+    },
+    {
+      id: 4,
+      label: "🚲 Bicycle",
+      bgColor: "bg-green-200",
+      textColor: "text-green-800",
+      isCorrect: false,
+    },
+    {
+      id: 5,
+      label: "🚦 Pedestrian Light",
+      bgColor: "bg-purple-200",
+      textColor: "text-purple-800",
+      isCorrect: true,
+    },
+    {
+      id: 6,
+      label: "🚌 City Bus",
+      bgColor: "bg-orange-200",
+      textColor: "text-orange-800",
+      isCorrect: false,
+    },
+    {
+      id: 7,
+      label: "🚶 Crosswalk",
+      bgColor: "bg-gray-200",
+      textColor: "text-gray-800",
+      isCorrect: false,
+    },
+    {
+      id: 8,
+      label: "🚦 Traffic Light Pole",
+      bgColor: "bg-pink-200",
+      textColor: "text-pink-800",
+      isCorrect: true,
+    },
+    {
+      id: 9,
+      label: "🏍️ Motorcycle",
+      bgColor: "bg-indigo-200",
+      textColor: "text-indigo-800",
+      isCorrect: false,
+    },
   ]
 
   const handleImageClick = (imageId: number) => {
@@ -150,6 +241,19 @@ export function CaptchaExperiencePopup() {
     return `${(ms / 1000).toFixed(1)} seconds`
   }
 
+  const handleClose = () => {
+    setIsVisible(false)
+
+    // Mark as completed if they went through the full experience
+    if (currentStep === "conclusion" || isCompleted) {
+      if (typeof window !== "undefined") {
+        localStorage.setItem("captcha-popup-completed", "true")
+        localStorage.setItem("captcha-popup-completed-time", Date.now().toString())
+        setHasCompletedBefore(true)
+      }
+    }
+  }
+
   const triggerManually = () => {
     setIsVisible(true)
     setCurrentStep("captcha")
@@ -162,6 +266,15 @@ export function CaptchaExperiencePopup() {
     setIsManualTrigger(true)
   }
 
+  const resetExperience = () => {
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("captcha-popup-completed")
+      localStorage.removeItem("captcha-popup-completed-time")
+      setHasCompletedBefore(false)
+    }
+    triggerManually()
+  }
+
   return (
     <>
       {/* Debug info - remove in production */}
@@ -170,19 +283,23 @@ export function CaptchaExperiencePopup() {
           <div>Scroll: {debugInfo.scrollY}px</div>
           <div>Time: {Math.round(debugInfo.timeOnPage / 1000)}s</div>
           <div>Triggered: {debugInfo.triggered ? "Yes" : "No"}</div>
+          <div>Completed Before: {hasCompletedBefore ? "Yes" : "No"}</div>
           <button onClick={triggerManually} className="bg-red-500 px-2 py-1 rounded mt-1 text-xs">
             Force Trigger
+          </button>
+          <button onClick={resetExperience} className="bg-blue-500 px-2 py-1 rounded mt-1 text-xs ml-1">
+            Reset & Trigger
           </button>
         </div>
       )}
 
-      {/* Manual trigger button */}
+      {/* Manual trigger button - show different text based on completion status */}
       {!isVisible && (
         <button
-          onClick={triggerManually}
+          onClick={hasCompletedBefore ? resetExperience : triggerManually}
           className="fixed bottom-6 right-6 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors border border-gray-600 hover:border-gray-500"
         >
-          Experience CAPTCHA frustration →
+          {hasCompletedBefore ? "Experience CAPTCHA frustration again →" : "Experience CAPTCHA frustration →"}
         </button>
       )}
 
@@ -197,7 +314,7 @@ export function CaptchaExperiencePopup() {
                     <Shield className="w-5 h-5 text-blue-600" />
                     <h3 className="text-lg font-semibold text-gray-900">Verify you're human</h3>
                   </div>
-                  <button onClick={() => setIsVisible(false)} className="text-gray-400 hover:text-gray-600">
+                  <button onClick={handleClose} className="text-gray-400 hover:text-gray-600">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
@@ -220,15 +337,17 @@ export function CaptchaExperiencePopup() {
                     <div
                       key={image.id}
                       onClick={() => handleImageClick(image.id)}
-                      className={`aspect-square bg-gray-200 border-2 cursor-pointer flex items-center justify-center text-xs text-gray-600 hover:bg-gray-300 transition-colors relative ${
-                        selectedImages.includes(image.id) ? "border-blue-500 bg-blue-100" : "border-gray-300"
+                      className={`aspect-square border-2 cursor-pointer hover:opacity-80 transition-all relative overflow-hidden rounded flex items-center justify-center text-center p-2 ${
+                        image.bgColor
+                      } ${image.textColor} ${
+                        selectedImages.includes(image.id) ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-300"
                       }`}
                     >
-                      {image.label}
+                      <div className="text-xs font-medium leading-tight">{image.label}</div>
                       {selectedImages.includes(image.id) && (
-                        <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
-                          <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
-                            <span className="text-white text-xs">✓</span>
+                        <div className="absolute inset-0 bg-blue-500/30 flex items-center justify-center">
+                          <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-white text-sm font-bold">✓</span>
                           </div>
                         </div>
                       )}
@@ -282,6 +401,68 @@ export function CaptchaExperiencePopup() {
                     <div className="flex justify-between border-t pt-2">
                       <span>Time wasted:</span>
                       <span className="font-bold text-red-600">{formatTime(completionTime - 200)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Million Iteration Impact */}
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <h4 className="font-bold text-red-800 mb-3">Scale Impact: 1 Million Users</h4>
+                  <div className="text-sm text-red-700 space-y-2">
+                    <div className="flex justify-between">
+                      <span>Traditional CAPTCHA:</span>
+                      <span className="font-semibold">
+                        {Math.round((completionTime * 1000000) / 3600000).toLocaleString()} human hours
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Invisible CAPTCHA:</span>
+                      <span className="font-semibold text-green-600">0 human hours</span>
+                    </div>
+                    <div className="flex justify-between border-t border-red-300 pt-2 font-bold">
+                      <span>Human time saved:</span>
+                      <span className="text-red-800">
+                        {Math.round((completionTime * 1000000) / 3600000).toLocaleString()} human hours
+                      </span>
+                    </div>
+
+                    {/* Fun alternative activities */}
+                    <div className="mt-3 pt-3 border-t border-red-300">
+                      <div className="text-xs text-red-600 font-semibold mb-2">
+                        With that saved time, humanity could instead:
+                      </div>
+                      <div className="space-y-1 text-xs text-red-700">
+                        {(() => {
+                          const totalHours = Math.round((completionTime * 1000000) / 3600000)
+                          const activities = []
+
+                          // Calculate different activities based on time saved
+                          if (totalHours >= 10000) {
+                            activities.push(`🎬 Watch ${Math.round(totalHours / 2.5).toLocaleString()} movies`)
+                          }
+                          if (totalHours >= 1000) {
+                            activities.push(`📚 Read ${Math.round(totalHours / 8).toLocaleString()} novels`)
+                          }
+                          if (totalHours >= 100) {
+                            activities.push(
+                              `☕ Enjoy ${Math.round((totalHours * 60) / 15).toLocaleString()} coffee breaks`,
+                            )
+                          }
+                          if (totalHours >= 50) {
+                            activities.push(`🏃 Run ${Math.round(totalHours * 6).toLocaleString()} miles`)
+                          }
+                          if (totalHours >= 10) {
+                            activities.push(`😴 Take ${Math.round(totalHours / 0.33).toLocaleString()} power naps`)
+                          }
+
+                          // Always show pizza slices for any amount of time
+                          activities.push(
+                            `🍕 Eat ${Math.round((totalHours * 60) / 3).toLocaleString()} slices of pizza`,
+                          )
+
+                          return activities.slice(0, 3).map((activity, index) => <div key={index}>• {activity}</div>)
+                        })()}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -412,13 +593,13 @@ export function CaptchaExperiencePopup() {
 
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setIsVisible(false)}
+                    onClick={handleClose}
                     className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
                   >
                     Learn More About Invisible CAPTCHAs
                   </button>
                   <button
-                    onClick={() => setIsVisible(false)}
+                    onClick={handleClose}
                     className="px-4 py-3 text-gray-600 hover:text-gray-800 transition-colors"
                   >
                     Close

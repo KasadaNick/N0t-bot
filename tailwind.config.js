@@ -5,9 +5,8 @@ module.exports = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/**/*.{js,ts,jsx,tsx,mdx}",
-      "*.{js,ts,jsx,tsx,mdx}"
-],
+    "*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     extend: {
       colors: {
@@ -46,7 +45,7 @@ module.exports = {
         },
         gray: {
           50: "#f9fafb",
-          100: "#f3f4f6", 
+          100: "#f3f4f6",
           200: "#e5e7eb",
           300: "#d1d5db",
           400: "#9ca3af",
@@ -58,7 +57,7 @@ module.exports = {
         },
         green: {
           400: "#4ade80",
-          500: "#22c55e", 
+          500: "#22c55e",
           600: "#16a34a",
         },
       },
@@ -75,7 +74,7 @@ module.exports = {
             "--tw-prose-lead": "#9ca3af",
             "--tw-prose-links": "#4ade80",
             "--tw-prose-bold": "#f9fafb",
-            "--tw-prose-counters": "#9ca3af", 
+            "--tw-prose-counters": "#9ca3af",
             "--tw-prose-bullets": "#6b7280",
             "--tw-prose-hr": "#374151",
             "--tw-prose-quotes": "#f3f4f6",
@@ -91,8 +90,5 @@ module.exports = {
       },
     },
   },
-  plugins: [
-    require("@tailwindcss/typography"), 
-    require("tailwindcss-animate")
-  ],
+  plugins: [require("@tailwindcss/typography"), require("tailwindcss-animate")],
 }
