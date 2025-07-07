@@ -7,8 +7,6 @@ featured: true
 slug: "invisible-captcha-maybes"
 ---
 
-# There Are No Maybes in Invisible CAPTCHAs
-
 
 *This is the second post in our invisible CAPTCHA series. In our [first post](http://link-to-first-blog), we explored how AI has fundamentally broken the traditional puzzle-based verification model and why invisible systems represent the evolution of human verification. Today, we examine why legacy CAPTCHA vendors struggle to make this transition successfully.*
 
