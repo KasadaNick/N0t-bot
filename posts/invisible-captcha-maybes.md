@@ -8,7 +8,7 @@ slug: "invisible-captcha-maybes"
 ---
 
 
-*This is the second post in our invisible CAPTCHA series. In our [first post](http://link-to-first-blog), we explored how AI has fundamentally broken the traditional puzzle-based verification model and why invisible systems represent the evolution of human verification. Today, we examine why legacy CAPTCHA vendors struggle to make this transition successfully.*
+*This is the second post in our invisible CAPTCHA series. In our [first post](https://www.n0t.bot/blog/captcha-time-tariff), we explored how AI has fundamentally broken the traditional puzzle-based verification model and why invisible systems represent the evolution of human verification. Today, we examine why legacy CAPTCHA vendors struggle to make this transition successfully.*
 
 
 
